@@ -1,52 +1,47 @@
 <!doctype html>
-<html lang="en">
+<html lang="ka">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>Submit a Problem Anonymously</title>
+  <title>პრობლემის ანონიმური გაგზავნა</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Submit a Problem Anonymously</h1>
+      <h1>პრობლემის ანონიმური გაგზავნა</h1>
     </header>
 
     <form id="submission-form" novalidate>
       <div class="field">
-        <label for="problem">Your problem <span class="required">*</span></label>
+        <label for="problem">თქვენი პრობლემა <span class="required">*</span></label>
         <textarea
           id="problem"
           name="problem"
           rows="6"
           maxlength="5000"
-          placeholder="Describe what's going on..."
+          placeholder="აღწერეთ რა ხდება..."
           required
         ></textarea>
+        <small class="hint">მაქს. 5000 სიმბოლო. გთხოვთ იყავით თავაზიანი.</small>
         <span class="error-message" id="problem-error" role="alert" aria-live="polite"></span>
       </div>
 
+      <!-- REMOVED: region dropdown. Locations are now Area > City only. -->
+
       <div class="field">
-        <label for="area">Area <span class="required">*</span></label>
+        <label for="area">მხარე <span class="required">*</span></label>
         <select id="area" name="area" required>
-          <option value="">-- Select area --</option>
+          <option value="">-- აირჩიეთ მხარე --</option>
         </select>
         <span class="error-message" id="area-error" role="alert" aria-live="polite"></span>
       </div>
 
       <div class="field">
-        <label for="region">Region <span class="required">*</span></label>
-        <select id="region" name="region" required disabled>
-          <option value="">-- Select area first --</option>
-        </select>
-        <span class="error-message" id="region-error" role="alert" aria-live="polite"></span>
-      </div>
-
-      <div class="field">
-        <label for="city">City <span class="required">*</span></label>
+        <label for="city">ქალაქი <span class="required">*</span></label>
         <select id="city" name="city" required disabled>
-          <option value="">-- Select region first --</option>
+          <option value="">-- ჯერ აირჩიეთ მხარე --</option>
         </select>
         <span class="error-message" id="city-error" role="alert" aria-live="polite"></span>
       </div>
@@ -55,25 +50,25 @@
         <label class="checkbox-label" for="consent">
           <input type="checkbox" id="consent" name="consent" required>
           <span>
-            I have read the guidelines and understand my submission is
-            anonymous. I will not include personal information about myself
-            or other identifiable individuals.
+            წავიკითხე წესები და მესმის, რომ ჩემი გაგზავნა ანონიმურია.
+            არ შევიყვან პერსონალურ ინფორმაციას ჩემზე ან სხვა პირებზე.
           </span>
         </label>
         <span class="error-message" id="consent-error" role="alert" aria-live="polite"></span>
       </div>
 
-      <button type="submit" id="submit-btn">Submit anonymously</button>
+      <button type="submit" id="submit-btn">ანონიმურად გაგზავნა</button>
       <span class="error-message" id="form-error" role="alert" aria-live="polite"></span>
     </form>
 
     <div id="thank-you" class="thank-you hidden">
-      <h2>Thank you for your submission!</h2>
-      <p>Your message has been received anonymously. We appreciate you taking the time to share.</p>
-      <button type="button" id="submit-another">Submit another</button>
+      <h2>გმადლობთ გაგზავნისთვის!</h2>
+      <p>თქვენი შეტყობინება მიღებულია ანონიმურად. გვაფასებთ, რომ გვითხარით.</p>
+      <button type="button" id="submit-another">კიდევ ერთის გაგზავნა</button>
     </div>
   </div>
 
+  <script src="/js/i18n.js"></script>
   <script src="/js/main.js"></script>
 </body>
 </html>

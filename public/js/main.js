@@ -1,16 +1,11 @@
-/* main.js - logic for the public submission form.
-
-   What this file does:
-     1. Fetches /locations.json once on page load - this is the single source
-        of truth for which Area > Region > City combinations are valid.
-     2. Wires up three cascading dropdowns:
-          - Area     -> populates Region, then enables it
-          - Region   -> populates City,   then enables it
-          - City     -> final leaf
-        Changing Area resets Region and City. Changing Region resets City.
-     3. Validates everything client-side (the server validates again).
-     4. POSTs the result to /api/submit and shows a thank-you message.
-*/
+/* main.js - public submission form.
+ *
+ * Changes vs. the old 3-level version (region removed):
+ *   - locations.json shape is now { Area: [City, ...] }
+ *   - Two dropdowns only: Area -> City
+ *   - When Area changes, City repopulates and enables; reset on clear.
+ *   - All user-facing strings come from i18n.js (t(...)).
+ */
 (function () {
   'use strict';
 
@@ -22,13 +17,11 @@
 
   var problemInput  = document.getElementById('problem');
   var areaSelect    = document.getElementById('area');
-  var regionSelect  = document.getElementById('region');
   var citySelect    = document.getElementById('city');
   var consentInput  = document.getElementById('consent');
 
   var problemError  = document.getElementById('problem-error');
   var areaError     = document.getElementById('area-error');
-  var regionError   = document.getElementById('region-error');
   var cityError     = document.getElementById('city-error');
   var consentError  = document.getElementById('consent-error');
   var formError     = document.getElementById('form-error');
@@ -36,12 +29,6 @@
   // --- locations data (loaded from /locations.json) ----------------------
   var LOCATIONS = {};
 
-  /**
-   * Replace a <select>'s options with a fresh list.
-   * @param {HTMLSelectElement} sel
-   * @param {string[]} values        labels to show (also used as value)
-   * @param {string} placeholder     first, value="" placeholder option
-   */
   function populateOptions(sel, values, placeholder) {
     sel.innerHTML = '';
     var blank = document.createElement('option');
@@ -64,45 +51,27 @@
       })
       .then(function (data) {
         LOCATIONS = data;
-        populateOptions(areaSelect, Object.keys(LOCATIONS), '-- Select area --');
+        populateOptions(areaSelect, Object.keys(LOCATIONS), t('selectArea'));
       })
       .catch(function () {
-        formError.textContent =
-          'Could not load location data. Please refresh the page.';
+        formError.textContent = t('errLoadLocations');
         submitBtn.disabled = true;
       });
   }
 
   // --- cascade behaviour -------------------------------------------------
+  // REMOVED: region select listener. Region no longer exists.
   areaSelect.addEventListener('change', function () {
     var area = areaSelect.value;
-    // Reset downstream selects whenever Area changes.
-    populateOptions(citySelect, [], '-- Select region first --');
-    citySelect.disabled = true;
-
     if (!area) {
-      populateOptions(regionSelect, [], '-- Select area first --');
-      regionSelect.disabled = true;
-      return;
-    }
-
-    var regions = Object.keys(LOCATIONS[area] || {});
-    populateOptions(regionSelect, regions, '-- Select region --');
-    regionSelect.disabled = false;
-  });
-
-  regionSelect.addEventListener('change', function () {
-    var area   = areaSelect.value;
-    var region = regionSelect.value;
-
-    if (!area || !region) {
-      populateOptions(citySelect, [], '-- Select region first --');
+      populateOptions(citySelect, [], t('selectAreaFirst'));
       citySelect.disabled = true;
       return;
     }
-
-    var cities = (LOCATIONS[area] || {})[region] || [];
-    populateOptions(citySelect, cities, '-- Select city --');
+    // Cities are already alphabetised in locations.json (Georgian order),
+    // so we render them as-is.
+    var cities = LOCATIONS[area] || [];
+    populateOptions(citySelect, cities, t('selectCity'));
     citySelect.disabled = false;
   });
 
@@ -116,7 +85,6 @@
   function clearAllErrors() {
     setFieldError(problemInput, problemError, '');
     setFieldError(areaSelect,   areaError,    '');
-    setFieldError(regionSelect, regionError,  '');
     setFieldError(citySelect,   cityError,    '');
     setFieldError(consentInput, consentError, '');
     formError.textContent = '';
@@ -125,7 +93,6 @@
   // Auto-clear errors as the user fixes each field.
   problemInput.addEventListener('input',  function () { if (problemError.textContent) setFieldError(problemInput, problemError, ''); });
   areaSelect.addEventListener('change',   function () { if (areaError.textContent)    setFieldError(areaSelect,   areaError,    ''); });
-  regionSelect.addEventListener('change', function () { if (regionError.textContent)  setFieldError(regionSelect, regionError,  ''); });
   citySelect.addEventListener('change',   function () { if (cityError.textContent)    setFieldError(citySelect,   cityError,    ''); });
   consentInput.addEventListener('change', function () { if (consentError.textContent) setFieldError(consentInput, consentError, ''); });
 
@@ -135,27 +102,23 @@
     var problem = problemInput.value.trim();
 
     if (!problem) {
-      setFieldError(problemInput, problemError, 'Please describe your problem.');
+      setFieldError(problemInput, problemError, t('errProblemRequired'));
       ok = false;
     } else if (problem.length > 5000) {
-      setFieldError(problemInput, problemError, 'Too long (5000 characters max).');
+      setFieldError(problemInput, problemError, t('errProblemTooLong'));
       ok = false;
     }
 
     if (!areaSelect.value) {
-      setFieldError(areaSelect, areaError, 'Please select an area.');
-      ok = false;
-    }
-    if (!regionSelect.value) {
-      setFieldError(regionSelect, regionError, 'Please select a region.');
+      setFieldError(areaSelect, areaError, t('errAreaRequired'));
       ok = false;
     }
     if (!citySelect.value) {
-      setFieldError(citySelect, cityError, 'Please select a city.');
+      setFieldError(citySelect, cityError, t('errCityRequired'));
       ok = false;
     }
     if (!consentInput.checked) {
-      setFieldError(consentInput, consentError, 'You must agree to the guidelines.');
+      setFieldError(consentInput, consentError, t('errConsentRequired'));
       ok = false;
     }
 
@@ -166,21 +129,22 @@
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     clearAllErrors();
-
     if (!validate()) return;
 
-    var originalLabel = submitBtn.textContent;
+    var originalLabel    = submitBtn.textContent;
     submitBtn.disabled    = true;
-    submitBtn.textContent = 'Submitting...';
+    submitBtn.textContent = t('submitting');
 
     try {
+      // NOTE: body no longer includes `region`. The server-side handler
+      // was updated to match.
       var res = await fetch('/api/submit', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           problem: problemInput.value.trim(),
           area:    areaSelect.value,
-          region:  regionSelect.value,
           city:    citySelect.value,
           consent: consentInput.checked,
         }),
@@ -190,7 +154,7 @@
       try { data = await res.json(); } catch (_) {}
 
       if (!res.ok) {
-        formError.textContent = data.error || 'Submission failed. Please try again.';
+        formError.textContent = data.error || t('errSubmitFailed');
         return;
       }
 
@@ -198,15 +162,12 @@
       form.classList.add('hidden');
       thankYou.classList.remove('hidden');
       form.reset();
-      // form.reset() leaves Region/City populated but with empty value,
-      // so re-apply the initial disabled state.
-      populateOptions(regionSelect, [], '-- Select area first --');
-      populateOptions(citySelect,   [], '-- Select region first --');
-      regionSelect.disabled = true;
-      citySelect.disabled   = true;
+      // form.reset() leaves City populated; force the empty-disabled state.
+      populateOptions(citySelect, [], t('selectAreaFirst'));
+      citySelect.disabled = true;
       thankYou.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-      formError.textContent = 'Network error. Please try again.';
+      formError.textContent = t('errNetwork');
     } finally {
       submitBtn.disabled    = false;
       submitBtn.textContent = originalLabel;

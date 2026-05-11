@@ -1,25 +1,37 @@
 {
-  "West Georgia": {
-    "Imereti":                  ["Kutaisi", "Khoni", "Samtredia"],
-    "Samegrelo-Zemo Svaneti":   ["Zugdidi", "Poti", "Senaki"],
-    "Guria":                    ["Ozurgeti"],
-    "Adjara":                   ["Batumi", "Kobuleti"],
-    "Racha-Lechkhumi":          ["Ambrolauri", "Oni"]
-  },
-  "East Georgia": {
-    "Kakheti":            ["Telavi", "Sagarejo"],
-    "Kvemo Kartli":       ["Rustavi", "Marneuli", "Gardabani"],
-    "Shida Kartli":       ["Gori", "Kaspi", "Kareli"],
-    "Mtskheta-Mtianeti":  ["Tbilisi", "Dusheti", "Tianeti"]
-  },
-  "South Georgia": {
-    "Samtskhe-Javakheti": ["Akhaltsikhe", "Akhalkalaki", "Borjomi", "Ninotsminda"]
-  },
-  "North Georgia": {
-    "Svaneti":          ["Mestia"],
-    "Mountain Regions": ["Lentekhi", "Stepantsminda"]
-  },
-  "Central Georgia": {
-    "Inner Kartli Areas": ["Khashuri", "Surami"]
-  }
+  "დასავლეთი": [
+    "ამბროლაური",
+    "ბათუმი",
+    "ზუგდიდი",
+    "ლენტეხი",
+    "მესტია",
+    "ოზურგეთი",
+    "ონი",
+    "სამტრედია",
+    "სენაკი",
+    "ფოთი",
+    "ქობულეთი",
+    "ქუთაისი",
+    "ხონი"
+  ],
+  "აღმოსავლეთი": [
+    "ახალქალაქი",
+    "ახალციხე",
+    "ბორჯომი",
+    "გარდაბანი",
+    "გორი",
+    "დუშეთი",
+    "თბილისი",
+    "თელავი",
+    "თიანეთი",
+    "კასპი",
+    "მარნეული",
+    "ნინოწმინდა",
+    "რუსთავი",
+    "საგარეჯო",
+    "სტეფანწმინდა",
+    "სურამი",
+    "ქარელი",
+    "ხაშური"
+  ]
 }

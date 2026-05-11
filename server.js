@@ -145,7 +145,7 @@ function shouldUseSecureCookie(req) {
 
 // ---------------------------------------------------------------------------
 // 3. Allowed locations - single source of truth shared with the browser.
-//    Shape: { Area: { Region: [City, ...] } }
+//    Shape: { Area: [City, City, ...] }   (Region level was removed.)
 //    Editing public/locations.json updates BOTH the frontend dropdowns and
 //    this server-side validation; no code changes needed.
 // ---------------------------------------------------------------------------
@@ -158,12 +158,9 @@ try {
   process.exit(1);
 }
 
-function isValidLocation(area, region, city) {
-  if (typeof area !== 'string' || typeof region !== 'string' ||
-      typeof city !== 'string') return false;
-  const regions = LOCATIONS[area];
-  if (!regions) return false;
-  const cities = regions[region];
+function isValidLocation(area, city) {
+  if (typeof area !== 'string' || typeof city !== 'string') return false;
+  const cities = LOCATIONS[area];
   if (!Array.isArray(cities)) return false;
   return cities.indexOf(city) !== -1;
 }
@@ -217,7 +214,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 6. PUBLIC: submission endpoint
 // ---------------------------------------------------------------------------
 app.post('/api/submit', submitLimiter, (req, res) => {
-  const { problem, area, region, city, consent } = req.body || {};
+  // NOTE: `region` is no longer accepted - submissions now carry area + city.
+  const { problem, area, city, consent } = req.body || {};
 
   if (typeof problem !== 'string' || !problem.trim()) {
     return res.status(400).json({ error: 'Please describe your problem.' });
@@ -225,12 +223,11 @@ app.post('/api/submit', submitLimiter, (req, res) => {
   if (problem.length > 5000) {
     return res.status(400).json({ error: 'Problem text is too long (5000 chars max).' });
   }
-  if (!area)   return res.status(400).json({ error: 'Please select an area.' });
-  if (!region) return res.status(400).json({ error: 'Please select a region.' });
-  if (!city)   return res.status(400).json({ error: 'Please select a city.' });
-  if (!isValidLocation(area, region, city)) {
+  if (!area) return res.status(400).json({ error: 'Please select an area.' });
+  if (!city) return res.status(400).json({ error: 'Please select a city.' });
+  if (!isValidLocation(area, city)) {
     return res.status(400).json({
-      error: 'Selected area, region, and city do not match.'
+      error: 'Selected area and city do not match.'
     });
   }
   if (consent !== true && consent !== 'true' && consent !== 'on') {
@@ -241,7 +238,6 @@ app.post('/api/submit', submitLimiter, (req, res) => {
     id: crypto.randomUUID(),
     problem: problem.trim(),
     area,
-    region,
     city,
     timestamp: new Date().toISOString(),
   };

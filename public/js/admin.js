@@ -1,6 +1,9 @@
-/* admin.js - logic for the admin panel.
-   Calls /api/admin/* endpoints. The browser cookie carries the session,
-   so the server decides on every request whether you are still logged in. */
+/* admin.js - admin panel.
+ * Region was removed from the data model, so the submission card now shows
+ * just the Area (as a pill) and City (as a subtitle). The filter searches
+ * area / city / problem. Older records that still carry `region` are
+ * displayed gracefully but no new entries will have it.
+ */
 (function () {
   'use strict';
 
@@ -16,7 +19,7 @@
   var refreshBtn     = document.getElementById('refresh-btn');
   var filterInput    = document.getElementById('filter');
 
-  var cache = [];   // last fetched submissions, used by the live filter
+  var cache = []; // last fetched submissions, used by the live filter
 
   // --- helpers -----------------------------------------------------------
   function escapeHtml(s) {
@@ -29,23 +32,24 @@
   }
 
   function formatDate(iso) {
-    try { return new Date(iso).toLocaleString(); }
+    try { return new Date(iso).toLocaleString('ka-GE'); }
     catch (e) { return iso; }
   }
 
   function render(list) {
     countEl.textContent = '(' + list.length + ')';
     if (!list.length) {
-      submissionsEl.innerHTML = '<p class="empty-state">No submissions to show.</p>';
+      submissionsEl.innerHTML =
+        '<p class="empty-state">' + escapeHtml(t('noSubmissions')) + '</p>';
       return;
     }
     submissionsEl.innerHTML = list.map(function (s) {
-      // Build the "Region · City" subtitle. Older records may be missing
-      // some fields, so we filter empties out before joining.
+      // Subtitle: City for new entries; legacy entries may still have
+      // a region - we surface it for backward compatibility only.
       var detailParts = [];
-      if (s.region) detailParts.push(s.region);
+      if (s.region) detailParts.push(s.region);    // legacy data only
       if (s.city)   detailParts.push(s.city);
-      var detail = detailParts.join(' · '); // " · "
+      var detail = detailParts.join(' · ');
 
       var areaPill = s.area
         ? '<span class="region">' + escapeHtml(s.area) + '</span>'
@@ -62,7 +66,9 @@
           '</div>' +
           '<div class="text">' + escapeHtml(s.problem) + '</div>' +
           '<div class="actions">' +
-            '<button type="button" class="danger js-delete">Delete</button>' +
+            '<button type="button" class="danger js-delete">' +
+              escapeHtml(t('delete')) +
+            '</button>' +
           '</div>' +
         '</article>'
       );
@@ -73,23 +79,24 @@
     var q = filterInput.value.trim().toLowerCase();
     if (!q) { render(cache); return; }
     render(cache.filter(function (s) {
+      // REMOVED: region from filter scope (since field no longer exists),
+      // but we still match legacy region values if present.
       return (s.area    || '').toLowerCase().indexOf(q) !== -1 ||
-             (s.region  || '').toLowerCase().indexOf(q) !== -1 ||
              (s.city    || '').toLowerCase().indexOf(q) !== -1 ||
+             (s.region  || '').toLowerCase().indexOf(q) !== -1 ||
              (s.problem || '').toLowerCase().indexOf(q) !== -1;
     }));
   }
 
   // --- API calls ---------------------------------------------------------
   async function loadSubmissions() {
-    submissionsEl.innerHTML = '<p class="empty-state">Loading...</p>';
+    submissionsEl.innerHTML =
+      '<p class="empty-state">' + escapeHtml(t('loading')) + '</p>';
     try {
       var res = await fetch('/api/admin/submissions', { credentials: 'same-origin' });
       if (res.status === 401) {
         console.error('[admin] /api/admin/submissions returned 401 - ' +
-                      'session cookie was not accepted by the server. ' +
-                      'Check the server console and the Network tab ' +
-                      '(Cookie / Set-Cookie headers).');
+                      'cookie was not accepted. Check Network tab.');
         showLogin();
         return;
       }
@@ -99,12 +106,12 @@
     } catch (e) {
       console.error('[admin] loadSubmissions failed:', e);
       submissionsEl.innerHTML =
-        '<p class="empty-state">Could not load submissions.</p>';
+        '<p class="empty-state">' + escapeHtml(t('couldNotLoad')) + '</p>';
     }
   }
 
   async function deleteSubmission(id, cardEl) {
-    if (!confirm('Delete this submission permanently?')) return;
+    if (!confirm(t('confirmDelete'))) return;
     try {
       var res = await fetch('/api/admin/submissions/' + encodeURIComponent(id),
                             { method: 'DELETE', credentials: 'same-origin' });
@@ -114,15 +121,15 @@
         countEl.textContent = '(' + cache.length + ')';
         if (!cache.length) {
           submissionsEl.innerHTML =
-            '<p class="empty-state">No submissions to show.</p>';
+            '<p class="empty-state">' + escapeHtml(t('noSubmissions')) + '</p>';
         }
       } else if (res.status === 401) {
         showLogin();
       } else {
-        alert('Delete failed.');
+        alert(t('deleteFailed'));
       }
     } catch (e) {
-      alert('Network error while deleting.');
+      alert(t('networkErrorDelete'));
     }
   }
 
@@ -153,7 +160,7 @@
 
     var password = passwordInput.value;
     if (!password) {
-      loginError.textContent = 'Password required.';
+      loginError.textContent = t('errPasswordRequired');
       passwordInput.classList.add('input-error');
       return;
     }
@@ -172,11 +179,11 @@
         passwordInput.value = '';
         showAdmin();
       } else {
-        loginError.textContent = data.error || 'Login failed.';
+        loginError.textContent = data.error || t('errLoginFailed');
         passwordInput.classList.add('input-error');
       }
     } catch (err) {
-      loginError.textContent = 'Network error. Please try again.';
+      loginError.textContent = t('errNetwork');
     }
   });
 
@@ -191,7 +198,6 @@
   refreshBtn.addEventListener('click', loadSubmissions);
   filterInput.addEventListener('input', applyFilter);
 
-  // Event-delegation for delete buttons (so newly-rendered cards work too).
   submissionsEl.addEventListener('click', function (e) {
     var btn = e.target.closest && e.target.closest('.js-delete');
     if (!btn) return;

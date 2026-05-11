@@ -1,23 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="ka">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>Admin &ndash; Submissions</title>
+  <title>ადმინისტრატორი &ndash; შეტყობინებები</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <div class="container container--wide">
     <header>
-      <h1>Admin Panel</h1>
+      <h1>ადმინისტრატორის პანელი</h1>
     </header>
 
     <!-- Login view -->
     <section id="login-section">
+      <p>შეიყვანეთ ადმინისტრატორის პაროლი შეტყობინებების სანახავად.</p>
       <form id="login-form" autocomplete="off">
         <div class="field">
-          <label for="password">Password</label>
+          <label for="password">პაროლი</label>
           <input
             type="password"
             id="password"
@@ -27,29 +28,30 @@
           >
           <span class="error-message" id="login-error" role="alert" aria-live="polite"></span>
         </div>
-        <button type="submit">Log in</button>
+        <button type="submit">შესვლა</button>
       </form>
     </section>
 
     <!-- Submissions view (revealed after login) -->
     <section id="admin-section" class="hidden">
       <div class="admin-toolbar">
-        <h2>Submissions <span id="count" class="count"></span></h2>
+        <h2>შეტყობინებები <span id="count" class="count"></span></h2>
         <div class="admin-actions">
           <input
             type="search"
             id="filter"
-            placeholder="Filter by area, region, city, or text..."
-            aria-label="Filter submissions"
+            placeholder="ფილტრი მხარით, ქალაქით ან ტექსტით..."
+            aria-label="ფილტრი"
           >
-          <button type="button" id="refresh-btn" class="secondary">Refresh</button>
-          <button type="button" id="logout-btn" class="secondary">Log out</button>
+          <button type="button" id="refresh-btn" class="secondary">განახლება</button>
+          <button type="button" id="logout-btn" class="secondary">გასვლა</button>
         </div>
       </div>
       <div id="submissions" aria-live="polite"></div>
     </section>
   </div>
 
+  <script src="/js/i18n.js"></script>
   <script src="/js/admin.js"></script>
 </body>
 </html>
