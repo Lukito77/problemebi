@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Submit a Problem Anonymously</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Submit a Problem Anonymously</h1>
+    </header>
+
+    <form id="submission-form" novalidate>
+      <div class="field">
+        <label for="problem">Your problem <span class="required">*</span></label>
+        <textarea
+          id="problem"
+          name="problem"
+          rows="6"
+          maxlength="5000"
+          placeholder="Describe what's going on..."
+          required
+        ></textarea>
+        <span class="error-message" id="problem-error" role="alert" aria-live="polite"></span>
+      </div>
+
+      <div class="field">
+        <label for="area">Area <span class="required">*</span></label>
+        <select id="area" name="area" required>
+          <option value="">-- Select area --</option>
+        </select>
+        <span class="error-message" id="area-error" role="alert" aria-live="polite"></span>
+      </div>
+
+      <div class="field">
+        <label for="region">Region <span class="required">*</span></label>
+        <select id="region" name="region" required disabled>
+          <option value="">-- Select area first --</option>
+        </select>
+        <span class="error-message" id="region-error" role="alert" aria-live="polite"></span>
+      </div>
+
+      <div class="field">
+        <label for="city">City <span class="required">*</span></label>
+        <select id="city" name="city" required disabled>
+          <option value="">-- Select region first --</option>
+        </select>
+        <span class="error-message" id="city-error" role="alert" aria-live="polite"></span>
+      </div>
+
+      <div class="checkbox-field">
+        <label class="checkbox-label" for="consent">
+          <input type="checkbox" id="consent" name="consent" required>
+          <span>
+            I have read the guidelines and understand my submission is
+            anonymous. I will not include personal information about myself
+            or other identifiable individuals.
+          </span>
+        </label>
+        <span class="error-message" id="consent-error" role="alert" aria-live="polite"></span>
+      </div>
+
+      <button type="submit" id="submit-btn">Submit anonymously</button>
+      <span class="error-message" id="form-error" role="alert" aria-live="polite"></span>
+    </form>
+
+    <div id="thank-you" class="thank-you hidden">
+      <h2>Thank you for your submission!</h2>
+      <p>Your message has been received anonymously. We appreciate you taking the time to share.</p>
+      <button type="button" id="submit-another">Submit another</button>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
