@@ -1,10 +1,4 @@
 require('dotenv').config();
-const { createClient } = require("@supabase/supabase-js");
-
-const supabase = createClient(
-  "https://georgia-report-system.onrender.com/",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlZnR1eXpucnd6ZGR3cnhlZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzQ5MDQsImV4cCI6MjA5NDYxMDkwNH0.csmXkhGI-cVnkbjej9X1dIO7HcYmhcmj5HCq56S4s3k"
-);
 
 const express = require('express');
 const rateLimit = require('express-rate-limit');
