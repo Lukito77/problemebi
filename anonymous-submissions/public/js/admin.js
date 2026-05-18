@@ -212,3 +212,4 @@
     else showLogin();
   })
   .catch(showLogin);
+})();
