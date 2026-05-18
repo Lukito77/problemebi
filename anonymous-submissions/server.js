@@ -1,5 +1,12 @@
 require('dotenv').config();
 
+const { createClient } = require("@supabase/supabase-js");
+
+const supabase = createClient(
+  "https://weftuyznrwzddwrxegxl.supabase.co/rest/v1/",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlZnR1eXpucnd6ZGR3cnhlZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzQ5MDQsImV4cCI6MjA5NDYxMDkwNH0.csmXkhGI-cVnkbjej9X1dIO7HcYmhcmj5HCq56S4s3k"
+);
+
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
@@ -150,4 +157,10 @@ app.delete("/api/admin/submissions/:id", requireAdmin, (req, res) => {
 });
 
 // -------------------- EXPORT --------------------
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 module.exports = app;
