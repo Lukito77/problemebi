@@ -1,21 +1,7 @@
-/* main.js - logic for the public submission form.
-
-   What this file does:
-     1. Fetches /locations.json once on page load - this is the single source
-        of truth for which Area > Region > City combinations are valid.
-     2. Wires up three cascading dropdowns:
-          - Area     -> populates Region, then enables it
-          - Region   -> populates City,   then enables it
-          - City     -> final leaf
-        Changing Area resets Region and City. Changing Region resets City.
-     3. Validates everything client-side (the server validates again).
-     4. POSTs the result to /api/submit and shows a thank-you message.
-*/
+/* main.js - logic for the public submission form. */
 (function () {
   'use strict';
 
-  // --- element references ------------------------------------------------
-  const cookieParser = require('cookie-parser');
   var form          = document.getElementById('submission-form');
   var thankYou      = document.getElementById('thank-you');
   var submitBtn     = document.getElementById('submit-btn');
@@ -34,15 +20,8 @@
   var consentError  = document.getElementById('consent-error');
   var formError     = document.getElementById('form-error');
 
-  // --- locations data (loaded from /locations.json) ----------------------
   var LOCATIONS = {};
 
-  /**
-   * Replace a <select>'s options with a fresh list.
-   * @param {HTMLSelectElement} sel
-   * @param {string[]} values        labels to show (also used as value)
-   * @param {string} placeholder     first, value="" placeholder option
-   */
   function populateOptions(sel, values, placeholder) {
     sel.innerHTML = '';
     var blank = document.createElement('option');
@@ -57,41 +36,39 @@
     });
   }
 
-function loadLocations() {
-  return fetch('/locations.json')
-    .then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function (data) {
-      LOCATIONS = data;
-      populateOptions(
-        areaSelect,
-        Object.keys(LOCATIONS),
-        '-- აირჩიეთ მხარე --'
-      );
-    })
-    .catch(function () {
-      formError.textContent =
-        'მონაცემები ვერ ჩაიტვირთა. გთხოვთ განაახლოთ გვერდი.';
-    });
-}
+  function loadLocations() {
+    return fetch('/locations.json')
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        LOCATIONS = data;
+        populateOptions(
+          areaSelect,
+          Object.keys(LOCATIONS),
+          '-- აირჩიეთ მხარე --'
+        );
+      })
+      .catch(function () {
+        formError.textContent =
+          'მონაცემები ვერ ჩაიტვირთა. გთხოვთ განაახლოთ გვერდი.';
+      });
+  }
 
-  // --- cascade behaviour -------------------------------------------------
   areaSelect.addEventListener('change', function () {
     var area = areaSelect.value;
-    // Reset downstream selects whenever Area changes.
-    populateOptions(citySelect, [], '-- Select region first --');
+    populateOptions(citySelect, [], '-- ჯერ აირჩიეთ რეგიონი --');
     citySelect.disabled = true;
 
     if (!area) {
-      populateOptions(regionSelect, [], '-- Select area first --');
+      populateOptions(regionSelect, [], '-- ჯერ აირჩიეთ მხარე --');
       regionSelect.disabled = true;
       return;
     }
 
     var regions = Object.keys(LOCATIONS[area] || {});
-    populateOptions(regionSelect, regions, '-- Select region --');
+    populateOptions(regionSelect, regions, '-- აირჩიეთ რეგიონი --');
     regionSelect.disabled = false;
   });
 
@@ -100,17 +77,16 @@ function loadLocations() {
     var region = regionSelect.value;
 
     if (!area || !region) {
-      populateOptions(citySelect, [], '-- Select region first --');
+      populateOptions(citySelect, [], '-- ჯერ აირჩიეთ რეგიონი --');
       citySelect.disabled = true;
       return;
     }
 
     var cities = (LOCATIONS[area] || {})[region] || [];
-    populateOptions(citySelect, cities, '-- Select city --');
+    populateOptions(citySelect, cities, '-- აირჩიეთ ქალაქი --');
     citySelect.disabled = false;
   });
 
-  // --- error helpers -----------------------------------------------------
   function setFieldError(inputEl, errorEl, msg) {
     errorEl.textContent = msg || '';
     if (msg) inputEl.classList.add('input-error');
@@ -126,47 +102,44 @@ function loadLocations() {
     formError.textContent = '';
   }
 
-  // Auto-clear errors as the user fixes each field.
   problemInput.addEventListener('input',  function () { if (problemError.textContent) setFieldError(problemInput, problemError, ''); });
   areaSelect.addEventListener('change',   function () { if (areaError.textContent)    setFieldError(areaSelect,   areaError,    ''); });
   regionSelect.addEventListener('change', function () { if (regionError.textContent)  setFieldError(regionSelect, regionError,  ''); });
   citySelect.addEventListener('change',   function () { if (cityError.textContent)    setFieldError(citySelect,   cityError,    ''); });
   consentInput.addEventListener('change', function () { if (consentError.textContent) setFieldError(consentInput, consentError, ''); });
 
-  // --- validation --------------------------------------------------------
   function validate() {
     var ok = true;
     var problem = problemInput.value.trim();
 
     if (!problem) {
-      setFieldError(problemInput, problemError, 'Please describe your problem.');
+      setFieldError(problemInput, problemError, 'გთხოვთ აღწეროთ პრობლემა.');
       ok = false;
     } else if (problem.length > 5000) {
-      setFieldError(problemInput, problemError, 'Too long (5000 characters max).');
+      setFieldError(problemInput, problemError, 'მაქს. 5000 სიმბოლო.');
       ok = false;
     }
 
     if (!areaSelect.value) {
-      setFieldError(areaSelect, areaError, 'Please select an area.');
+      setFieldError(areaSelect, areaError, 'გთხოვთ აირჩიოთ მხარე.');
       ok = false;
     }
     if (!regionSelect.value) {
-      setFieldError(regionSelect, regionError, 'Please select a region.');
+      setFieldError(regionSelect, regionError, 'გთხოვთ აირჩიოთ რეგიონი.');
       ok = false;
     }
     if (!citySelect.value) {
-      setFieldError(citySelect, cityError, 'Please select a city.');
+      setFieldError(citySelect, cityError, 'გთხოვთ აირჩიოთ ქალაქი.');
       ok = false;
     }
     if (!consentInput.checked) {
-      setFieldError(consentInput, consentError, 'You must agree to the guidelines.');
+      setFieldError(consentInput, consentError, 'გთხოვთ დაეთანხმოთ პირობებს.');
       ok = false;
     }
 
     return ok;
   }
 
-  // --- submit ------------------------------------------------------------
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     clearAllErrors();
@@ -175,7 +148,7 @@ function loadLocations() {
 
     var originalLabel = submitBtn.textContent;
     submitBtn.disabled    = true;
-    submitBtn.textContent = 'Submitting...';
+    submitBtn.textContent = 'იგზავნება...';
 
     try {
       var res = await fetch('/api/submit', {
@@ -194,23 +167,20 @@ function loadLocations() {
       try { data = await res.json(); } catch (_) {}
 
       if (!res.ok) {
-        formError.textContent = data.error || 'Submission failed. Please try again.';
+        formError.textContent = data.error || 'შეცდომა. სცადეთ თავიდან.';
         return;
       }
 
-      // Success: swap form for thank-you card and reset all selects.
       form.classList.add('hidden');
       thankYou.classList.remove('hidden');
       form.reset();
-      // form.reset() leaves Region/City populated but with empty value,
-      // so re-apply the initial disabled state.
-      populateOptions(regionSelect, [], '-- Select area first --');
-      populateOptions(citySelect,   [], '-- Select region first --');
+      populateOptions(regionSelect, [], '-- ჯერ აირჩიეთ მხარე --');
+      populateOptions(citySelect,   [], '-- ჯერ აირჩიეთ რეგიონი --');
       regionSelect.disabled = true;
       citySelect.disabled   = true;
       thankYou.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-      formError.textContent = 'Network error. Please try again.';
+      formError.textContent = 'ქსელის შეცდომა. სცადეთ თავიდან.';
     } finally {
       submitBtn.disabled    = false;
       submitBtn.textContent = originalLabel;
@@ -224,6 +194,5 @@ function loadLocations() {
     problemInput.focus();
   });
 
-  // --- kick things off ---------------------------------------------------
   loadLocations();
 })();
