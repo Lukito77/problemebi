@@ -33,6 +33,7 @@
     });
   }
 
+document.getElementById('consent-text').textContent = t('consentText');
   function loadLocations() {
     return fetch('/locations.json')
       .then(function (r) {
