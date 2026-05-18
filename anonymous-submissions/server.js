@@ -3,7 +3,7 @@ require('dotenv').config();
 const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(
-  "https://weftuyznrwzddwrxegxl.supabase.co/rest/v1/",
+  "https://georgia-report-system.onrender.com/",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlZnR1eXpucnd6ZGR3cnhlZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzQ5MDQsImV4cCI6MjA5NDYxMDkwNH0.csmXkhGI-cVnkbjej9X1dIO7HcYmhcmj5HCq56S4s3k"
 );
 
@@ -37,7 +37,7 @@ app.use(
 );
 
 // -------------------- IN-MEMORY STORAGE (Vercel-safe) --------------------
-let submissions = [];
+
 
 // -------------------- LOCATIONS (SAFE LOAD) --------------------
 let LOCATIONS = {};
@@ -105,7 +105,22 @@ app.post("/api/submit", submitLimiter, (req, res) => {
     timestamp: new Date().toISOString(),
   };
 
-  submissions.push(entry);
+  const { error } = await supabase
+  .from("submissions")
+  .insert([
+    {
+      problem: problem.trim(),
+      area,
+      region,
+      city,
+    },
+  ]);
+
+if (error) {
+  return res.status(500).json({
+    error: error.message,
+  });
+}
 
   res.json({ ok: true });
 });
@@ -146,13 +161,34 @@ app.get("/api/admin/me", (req, res) => {
 });
 
 // -------------------- SUBMISSIONS --------------------
-app.get("/api/admin/submissions", requireAdmin, (req, res) => {
-  res.json({ submissions: submissions.slice().reverse() });
+app.get("/api/admin/submissions", requireAdmin, async (req, res) => {
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+
+  res.json({ submissions: data });
 });
 
 // -------------------- DELETE --------------------
-app.delete("/api/admin/submissions/:id", requireAdmin, (req, res) => {
-  submissions = submissions.filter((x) => x.id !== req.params.id);
+app.delete("/api/admin/submissions/:id", requireAdmin, async (req, res) => {
+  const { error } = await supabase
+    .from("submissions")
+    .delete()
+    .eq("id", req.params.id);
+
+  if (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+
   res.json({ ok: true });
 });
 

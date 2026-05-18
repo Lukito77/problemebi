@@ -57,22 +57,25 @@
     });
   }
 
-  function loadLocations() {
-    return fetch('/locations.json')
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
-      .then(function (data) {
-        LOCATIONS = data;
-        populateOptions(areaSelect, Object.keys(LOCATIONS), '-- Select area --');
-      })
-      .catch(function () {
-        formError.textContent =
-          'Could not load location data. Please refresh the page.';
-        submitBtn.disabled = true;
-      });
-  }
+function loadLocations() {
+  return fetch('/locations.json')
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      LOCATIONS = data;
+      populateOptions(
+        areaSelect,
+        Object.keys(LOCATIONS),
+        '-- აირჩიეთ მხარე --'
+      );
+    })
+    .catch(function () {
+      formError.textContent =
+        'მონაცემები ვერ ჩაიტვირთა. გთხოვთ განაახლოთ გვერდი.';
+    });
+}
 
   // --- cascade behaviour -------------------------------------------------
   areaSelect.addEventListener('change', function () {
