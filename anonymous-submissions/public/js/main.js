@@ -173,5 +173,14 @@
   });
 
   document.getElementById('consent-text').textContent = t('consentText');
+
+  document.getElementById('attach-btn').addEventListener('click', function () {
+    document.getElementById('image').click();
+  });
+  document.getElementById('image').addEventListener('change', function () {
+    var label = document.getElementById('attach-label');
+    label.textContent = this.files[0] ? this.files[0].name : '';
+  });
+
   loadLocations();
 })();
