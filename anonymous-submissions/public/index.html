@@ -28,8 +28,6 @@
         <span class="error-message" id="problem-error" role="alert" aria-live="polite"></span>
       </div>
 
-      <!-- REMOVED: region dropdown. Locations are now Area > City only. -->
-
       <div class="field">
         <label for="area">მხარე <span class="required">*</span></label>
         <select id="area" name="area" required>
@@ -46,6 +44,13 @@
         <span class="error-message" id="city-error" role="alert" aria-live="polite"></span>
       </div>
 
+      <div class="field">
+        <label for="image">ფოტო (არასავალდებულო)</label>
+        <input type="file" id="image" name="image" accept="image/*">
+        <small class="hint">მაქს. 5MB. JPG, PNG, WEBP.</small>
+        <span class="error-message" id="image-error" role="alert" aria-live="polite"></span>
+      </div>
+
       <div class="checkbox-field">
         <label class="checkbox-label" for="consent">
           <input type="checkbox" id="consent" name="consent" required>
@@ -60,7 +65,7 @@
 
     <div id="thank-you" class="thank-you hidden">
       <h2>გმადლობთ გაგზავნისთვის!</h2>
-      <p>თქვენი შეტყობინება მიღებულია ანონიმურად.მადლობას გიხდით მხარდაჭერისთვის.</p>
+      <p>თქვენი შეტყობინება მიღებულია ანონიმურად. მადლობას გიხდით მხარდაჭერისთვის.</p>
       <button type="button" id="submit-another">კიდევ ერთის გაგზავნა</button>
     </div>
   </div>
