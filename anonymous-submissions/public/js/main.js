@@ -11,6 +11,7 @@
   var citySelect    = document.getElementById('city');
   var consentInput  = document.getElementById('consent');
   var imageInput    = document.getElementById('image');
+  var cameraInput   = document.getElementById('camera');
 
   var problemError  = document.getElementById('problem-error');
   var areaError     = document.getElementById('area-error');
@@ -18,6 +19,9 @@
   var consentError  = document.getElementById('consent-error');
   var imageError    = document.getElementById('image-error');
   var formError     = document.getElementById('form-error');
+  var attachLabel   = document.getElementById('attach-label');
+
+  var selectedFile  = null;
 
   var LOCATIONS = {};
 
@@ -77,6 +81,42 @@
     formError.textContent  = '';
   }
 
+  function handleFileSelect(file) {
+    if (!file) return;
+    var allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      imageError.textContent = 'მხოლოდ JPG, PNG ან WEBP ფორმატი.';
+      selectedFile = null;
+      attachLabel.textContent = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      imageError.textContent = 'ფაილი ძალიან დიდია (მაქს. 5MB).';
+      selectedFile = null;
+      attachLabel.textContent = '';
+      return;
+    }
+    imageError.textContent = '';
+    selectedFile = file;
+    attachLabel.textContent = '📎 ' + file.name;
+  }
+
+  document.getElementById('attach-btn').addEventListener('click', function () {
+    imageInput.click();
+  });
+
+  document.getElementById('camera-btn').addEventListener('click', function () {
+    cameraInput.click();
+  });
+
+  imageInput.addEventListener('change', function () {
+    handleFileSelect(this.files[0]);
+  });
+
+  cameraInput.addEventListener('change', function () {
+    handleFileSelect(this.files[0]);
+  });
+
   problemInput.addEventListener('input',  function () { if (problemError.textContent) setFieldError(problemInput, problemError, ''); });
   areaSelect.addEventListener('change',   function () { if (areaError.textContent)    setFieldError(areaSelect,   areaError,    ''); });
   citySelect.addEventListener('change',   function () { if (cityError.textContent)    setFieldError(citySelect,   cityError,    ''); });
@@ -101,17 +141,6 @@
       setFieldError(citySelect, cityError, 'გთხოვთ აირჩიოთ ქალაქი.');
       ok = false;
     }
-    if (imageInput.files && imageInput.files[0]) {
-      var file = imageInput.files[0];
-      var allowed = ['image/jpeg', 'image/png', 'image/webp'];
-      if (!allowed.includes(file.type)) {
-        imageError.textContent = 'მხოლოდ JPG, PNG ან WEBP ფორმატი.';
-        ok = false;
-      } else if (file.size > 5 * 1024 * 1024) {
-        imageError.textContent = 'ფაილი ძალიან დიდია (მაქს. 5MB).';
-        ok = false;
-      }
-    }
     if (!consentInput.checked) {
       setFieldError(consentInput, consentError, 'გთხოვთ დაეთანხმოთ პირობებს.');
       ok = false;
@@ -134,8 +163,8 @@
       formData.append('area',    areaSelect.value);
       formData.append('city',    citySelect.value);
       formData.append('consent', consentInput.checked);
-      if (imageInput.files && imageInput.files[0]) {
-        formData.append('image', imageInput.files[0]);
+      if (selectedFile) {
+        formData.append('image', selectedFile);
       }
 
       var res = await fetch('/api/submit', {
@@ -154,6 +183,8 @@
       form.classList.add('hidden');
       thankYou.classList.remove('hidden');
       form.reset();
+      selectedFile = null;
+      attachLabel.textContent = '';
       populateOptions(citySelect, [], '-- ჯერ აირჩიეთ მხარე --');
       citySelect.disabled = true;
       thankYou.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -173,14 +204,6 @@
   });
 
   document.getElementById('consent-text').textContent = t('consentText');
-
-  document.getElementById('attach-btn').addEventListener('click', function () {
-    document.getElementById('image').click();
-  });
-  document.getElementById('image').addEventListener('change', function () {
-    var label = document.getElementById('attach-label');
-    label.textContent = this.files[0] ? this.files[0].name : '';
-  });
 
   loadLocations();
 })();
