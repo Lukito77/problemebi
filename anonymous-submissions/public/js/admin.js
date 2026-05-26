@@ -51,7 +51,7 @@
         : '';
 
       return (
-        '<article class="submission" data-id="' + escapeHtml(s.id) + '">' +
+        '<article class="submission" data-id="' + escapeHtml(s._id) + '">' +
           '<div class="meta">' +
             '<div class="location">' +
               areaPill +
@@ -101,7 +101,7 @@
         credentials: 'include'
       });
       if (res.ok) {
-        cache = cache.filter(function (s) { return s.id !== id; });
+        cache = cache.filter(function (s) { return s._id !== id; });
         cardEl.remove();
         countEl.textContent = '(' + cache.length + ')';
         if (!cache.length) {
