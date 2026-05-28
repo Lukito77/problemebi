@@ -54,7 +54,7 @@ app.use(helmet({ contentSecurityPolicy: false }));
  
 let LOCATIONS = {};
 try {
-  const LOCATIONS_FILE = path.join(process.cwd(), 'public', 'locations.json');
+ const LOCATIONS_FILE = path.join(__dirname, 'public', 'locations.json');
   LOCATIONS = JSON.parse(fs.readFileSync(LOCATIONS_FILE, 'utf8'));
 } catch (err) {
   console.log("Locations file not loaded:", err.message);
