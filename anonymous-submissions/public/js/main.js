@@ -81,6 +81,14 @@
     formError.textContent  = '';
   }
 
+  function removeFile() {
+    selectedFile = null;
+    attachLabel.textContent = '';
+    imageInput.value = '';
+    cameraInput.value = '';
+    imageError.textContent = '';
+  }
+
   function handleFileSelect(file) {
     if (!file) return;
     var allowed = ['image/jpeg', 'image/png', 'image/webp'];
@@ -98,7 +106,18 @@
     }
     imageError.textContent = '';
     selectedFile = file;
-    attachLabel.textContent = '📎 ' + file.name;
+
+    attachLabel.innerHTML = '';
+
+    var fileText = document.createTextNode('📎 ' + file.name + ' ');
+    attachLabel.appendChild(fileText);
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '✕';
+    removeBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:0 4px;width:auto;display:inline;';
+    removeBtn.addEventListener('click', removeFile);
+    attachLabel.appendChild(removeBtn);
   }
 
   document.getElementById('attach-btn').addEventListener('click', function () {
@@ -183,8 +202,7 @@
       form.classList.add('hidden');
       thankYou.classList.remove('hidden');
       form.reset();
-      selectedFile = null;
-      attachLabel.textContent = '';
+      removeFile();
       populateOptions(citySelect, [], '-- ჯერ აირჩიეთ მხარე --');
       citySelect.disabled = true;
       thankYou.scrollIntoView({ behavior: 'smooth', block: 'start' });
