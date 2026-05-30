@@ -394,6 +394,8 @@ button.danger:hover:not(:disabled) {
   border-top: 1px solid #ece8e0;
   background: #faf8f5;
   border-radius: 0 0 8px 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .toolbar-btn {
@@ -408,6 +410,7 @@ button.danger:hover:not(:disabled) {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
@@ -420,8 +423,16 @@ button.danger:hover:not(:disabled) {
 .attach-label {
   font-size: 13px;
   color: #6b5f50;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.attach-label span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 200px;
 }
