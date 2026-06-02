@@ -54,24 +54,20 @@ app.use(helmet({ contentSecurityPolicy: false }));
  
 let LOCATIONS = {};
 try {
-  const possiblePaths = [
-    path.join(__dirname, 'public', 'locations.json'),
-    path.join(process.cwd(), 'public', 'locations.json'),
-    path.join(__dirname, '..', 'public', 'locations.json'),
-  ];
-
-  let loaded = false;
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      LOCATIONS = JSON.parse(fs.readFileSync(p, 'utf8'));
-      console.log('Locations loaded from:', p);
-      loaded = true;
-      break;
+  // ზუსტი გზა მთავარ საქაღალდეში არსებულ ფაილამდე
+  const primaryPath = path.join(process.cwd(), 'locations.json');
+  
+  if (fs.existsSync(primaryPath)) {
+    LOCATIONS = JSON.parse(fs.readFileSync(primaryPath, 'utf8'));
+    console.log('Locations loaded from root!');
+  } else {
+    const fallbackPath = path.join(process.cwd(), 'public', 'locations.json');
+    if (fs.existsSync(fallbackPath)) {
+      LOCATIONS = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
+      console.log('Locations loaded from public fallback.');
+    } else {
+      console.log('Locations file not found.');
     }
-  }
-  if (!loaded) {
-    console.log('Locations file not found. Checked paths:');
-    possiblePaths.forEach(p => console.log(' -', p));
   }
 } catch (err) {
   console.log("Locations file not loaded:", err.message);
@@ -108,7 +104,7 @@ function requireAdmin(req, res, next) {
  
 app.use(express.static(path.join(__dirname, "public")));
 
-// ახალი ენდპოინტი locations-ისთვის, რომელიც ყოველთვის ახალ ინფორმაციას დააბრუნებს
+// ენდპოინტი, რომელიც ფრონტენდს ახალ ლოკაციებს მიაწვდის
 app.get('/locations.json', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
   res.json(LOCATIONS);
