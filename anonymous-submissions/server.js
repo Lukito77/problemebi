@@ -107,6 +107,12 @@ function requireAdmin(req, res, next) {
 }
  
 app.use(express.static(path.join(__dirname, "public")));
+
+// ახალი ენდპოინტი locations-ისთვის, რომელიც ყოველთვის ახალ ინფორმაციას დააბრუნებს
+app.get('/locations.json', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.json(LOCATIONS);
+});
  
 app.post("/api/submit", submitLimiter, upload.single('image'), async (req, res) => {
   try {

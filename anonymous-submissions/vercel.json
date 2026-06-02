@@ -1,15 +1,14 @@
 {
   "version": 2,
   "builds": [
-    { "src": "server.js", "use": "@vercel/node" },
-    { "src": "public/**", "use": "@vercel/static" }
+    { "src": "server.js", "use": "@vercel/node" }
   ],
-  "routes": [
-    { "src": "/css/(.*)", "dest": "/public/css/$1" },
-    { "src": "/js/(.*)", "dest": "/public/js/$1" },
-    { "src": "/favicon.ico", "dest": "/public/favicon.ico" },
-    { "src": "/favicon.png", "dest": "/public/favicon.png" },
-    { "src": "/locations.json", "dest": "/public/locations.json" },
-    { "src": "/(.*)", "dest": "/server.js" }
+  "rewrites": [
+    { "source": "/css/(.*)", "destination": "/public/css/$1" },
+    { "source": "/js/(.*)", "force": true, "destination": "/public/js/$1" },
+    { "source": "/favicon.ico", "destination": "/public/favicon.ico" },
+    { "source": "/favicon.png", "destination": "/public/favicon.png" },
+    { "source": "/locations.json", "destination": "/server.js" },
+    { "source": "/(.*)", "destination": "/server.js" }
   ]
 }
