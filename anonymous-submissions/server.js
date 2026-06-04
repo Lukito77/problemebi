@@ -52,23 +52,12 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
  
+// locations.json ყოველთვის __dirname-ის გვერდით public საქაღალდიდან
 let LOCATIONS = {};
 try {
-  // ზუსტი გზა მთავარ საქაღალდეში არსებულ ფაილამდე
-  const primaryPath = path.join(process.cwd(), 'locations.json');
-  
-  if (fs.existsSync(primaryPath)) {
-    LOCATIONS = JSON.parse(fs.readFileSync(primaryPath, 'utf8'));
-    console.log('Locations loaded from root!');
-  } else {
-    const fallbackPath = path.join(process.cwd(), 'public', 'locations.json');
-    if (fs.existsSync(fallbackPath)) {
-      LOCATIONS = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
-      console.log('Locations loaded from public fallback.');
-    } else {
-      console.log('Locations file not found.');
-    }
-  }
+  const locPath = path.join(__dirname, 'public', 'locations.json');
+  LOCATIONS = JSON.parse(fs.readFileSync(locPath, 'utf8'));
+  console.log('Locations loaded from:', locPath);
 } catch (err) {
   console.log("Locations file not loaded:", err.message);
 }
@@ -103,10 +92,9 @@ function requireAdmin(req, res, next) {
 }
  
 app.use(express.static(path.join(__dirname, "public")));
-
-// ენდპოინტი, რომელიც ფრონტენდს ახალ ლოკაციებს მიაწვდის
+ 
 app.get('/locations.json', (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Cache-Control', 'no-store');
   res.json(LOCATIONS);
 });
  
@@ -203,8 +191,9 @@ app.delete("/api/admin/submissions/:id", requireAdmin, async (req, res) => {
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
+ 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
  
 module.exports = app;
+ 

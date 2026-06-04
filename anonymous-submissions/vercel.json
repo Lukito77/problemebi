@@ -1,14 +1,15 @@
 {
   "version": 2,
   "builds": [
-    { "src": "server.js", "use": "@vercel/node" }
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
   ],
   "rewrites": [
-    { "source": "/css/(.*)", "destination": "/public/css/$1" },
-    { "source": "/js/(.*)", "force": true, "destination": "/public/js/$1" },
-    { "source": "/favicon.ico", "destination": "/public/favicon.ico" },
-    { "source": "/favicon.png", "destination": "/public/favicon.png" },
-    { "source": "/locations.json", "destination": "/server.js" },
-    { "source": "/(.*)", "destination": "/server.js" }
+    {
+      "source": "/(.*)",
+      "destination": "/server.js"
+    }
   ]
 }
