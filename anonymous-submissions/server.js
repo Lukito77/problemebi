@@ -18,10 +18,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
  
-// MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB error:', err));
+// MongoDB კავშირი
+if (mongoose.connection.readyState === 0) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB error:', err));
+}
  
 const submissionSchema = new mongoose.Schema({
   problem:    { type: String, required: true },
@@ -31,8 +33,10 @@ const submissionSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now },
 });
  
-// შესწორებული ხაზი Vercel-ისთვის (Serverless გარემოსთვის)
-const Submission = mongoose.models.Submission || mongoose.model('Submission', submissionSchema);
+// მკაცრი შემოწმება Vercel-ისთვის
+const Submission = mongoose.models && mongoose.models.Submission 
+  ? mongoose.models.Submission 
+  : mongoose.model('Submission', submissionSchema);
  
 const app = express();
  
@@ -108,11 +112,11 @@ app.post("/api/submit", submitLimiter, upload.single('image'), async (req, res) 
     let image_url = null;
  
     if (req.file) {
-      // Cloudinary-ზე ატვირთვა buffer-იდან
+      // სინტაქსურად გასწორებული Cloudinary-ზე ატვირთვა
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: 'problemebi', resource_type: 'image' },
-          { error, result } => {
+          (error, result) => {
             if (error) reject(error);
             else resolve(result);
           }
