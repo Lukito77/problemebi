@@ -31,7 +31,8 @@ const submissionSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now },
 });
  
-const Submission = mongoose.model('Submission', submissionSchema);
+// შესწორებული ხაზი Vercel-ისთვის (Serverless გარემოსთვის)
+const Submission = mongoose.models.Submission || mongoose.model('Submission', submissionSchema);
  
 const app = express();
  
@@ -111,7 +112,7 @@ app.post("/api/submit", submitLimiter, upload.single('image'), async (req, res) 
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: 'problemebi', resource_type: 'image' },
-          (error, result) => {
+          { error, result } => {
             if (error) reject(error);
             else resolve(result);
           }
@@ -158,7 +159,7 @@ app.get("/api/admin/me", (req, res) => {
 app.delete("/api/admin/logout", (req, res) => {
   res.clearCookie("token", COOKIE_OPTIONS);
   res.json({ ok: true });
-});
+ });
  
 app.get("/api/admin/submissions", requireAdmin, async (req, res) => {
   try {
