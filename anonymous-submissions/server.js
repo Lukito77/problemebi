@@ -4,13 +4,19 @@ const express      = require('express');
 const rateLimit    = require('express-rate-limit');
 const helmet       = require('helmet');
 const path         = require('path');
-const crypto       = require('crypto');
 const jwt          = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const fs           = require('fs');
 const multer       = require('multer');
 const mongoose     = require('mongoose');
-const { createClient } = require('@supabase/supabase-js');
+const cloudinary   = require('cloudinary').v2;
+
+// Cloudinary კონფიგურაცია
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
  
 // MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -27,17 +33,10 @@ const submissionSchema = new mongoose.Schema({
  
 const Submission = mongoose.model('Submission', submissionSchema);
  
-// Supabase (მხოლოდ Storage-ისთვის)
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
- 
 const app = express();
  
 const JWT_SECRET     = process.env.JWT_SECRET     || "super_secret_key";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-const STORAGE_BUCKET = process.env.STORAGE_BUCKET || "submission-images";
 const IS_PROD        = process.env.NODE_ENV === 'production';
  
 const COOKIE_OPTIONS = {
@@ -52,7 +51,6 @@ app.use(express.urlencoded({ extended: false, limit: '20kb' }));
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
  
-// locations.json ყოველთვის __dirname-ის გვერდით public საქაღალდიდან
 let LOCATIONS = {};
 try {
   const locPath = path.join(__dirname, 'public', 'locations.json');
@@ -109,26 +107,18 @@ app.post("/api/submit", submitLimiter, upload.single('image'), async (req, res) 
     let image_url = null;
  
     if (req.file) {
-      const ext      = req.file.mimetype.split('/')[1];
-      const filename = `${crypto.randomUUID()}.${ext}`;
- 
-      const { error: uploadError } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .upload(filename, req.file.buffer, {
-          contentType: req.file.mimetype,
-          upsert: false,
-        });
- 
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        return res.status(500).json({ error: 'ფოტოს ატვირთვა ვერ მოხერხდა.' });
-      }
- 
-      const { data: urlData } = supabase.storage
-        .from(STORAGE_BUCKET)
-        .getPublicUrl(filename);
- 
-      image_url = urlData.publicUrl;
+      // Cloudinary-ზე ატვირთვა buffer-იდან
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'problemebi', resource_type: 'image' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+      image_url = result.secure_url;
     }
  
     await Submission.create({
@@ -196,4 +186,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
  
 module.exports = app;
- 
