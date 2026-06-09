@@ -112,7 +112,7 @@ app.post("/api/submit", submitLimiter, upload.single('image'), async (req, res) 
     let image_url = null;
  
     if (req.file) {
-      // სინტაქსურად გასწორებული Cloudinary-ზე ატვირთვა
+      // სწორი სინტაქსი: (error, result) მრგვალ ფრჩხილებში
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: 'problemebi', resource_type: 'image' },
